@@ -1,0 +1,153 @@
+### Prepare for GWAS
+
+echo "Beginning job!"
+
+cd ~/brc_scratch/scripts/
+
+basepath=$(sed '8q;d' paths.txt)
+ukbpath=$(sed '14q;d' paths.txt)
+jfam=$(sed '15q;d' paths.txt)
+
+echo $basepath
+echo $ukbpath
+echo $jfam
+
+outputbasepath=${basepath}output/
+softwarebasepath=${basepath}software/
+databasepath=${basepath}data/
+
+# create new reformatted fam file
+
+module load apps/plink/1.9.0b6.10
+
+plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc \
+--make-just-fam \
+--out ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted
+
+# ID and variant exclusions derived using mke_fam_inc_relatives.sh which sources Genotyped_Data_QC_JRIC_010317.sh 
+# relatedness set to 1 - include related individuals for mixed model GWAS
+
+#######################################################
+################## ID EXCLUSIONS ######################
+#######################################################
+
+# copy fam file that contains related individuals but has other QC exclusions applied
+
+cp ${jfam}ukb1817_MAF0.01_GENO0.02_MIND0.02_CAUC1_UKBQC1_UNREL1_HWE0.00000001.fam ${databasepath}biomarkers_ukb/
+
+# describe file and derive file of IIDs to remove
+
+head ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted.fam
+
+wc -l ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted.fam
+
+# get difference in IIDs, i.e. exclusions list, not keep list
+
+cd ${outputbasepath}biomarkers_ukb/
+
+sort ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted.fam > tmp_pre_qc.fam
+
+sort ${databasepath}biomarkers_ukb/ukb1817_MAF0.01_GENO0.02_MIND0.02_CAUC1_UKBQC1_UNREL1_HWE0.00000001.fam  > tmp_post_qc.fam
+
+# check pre-qc and post-qc fam files
+head tmp_pre_qc.fam
+
+head tmp_post_qc.fam
+
+# derive difference in IDs list
+comm -2 -3 tmp_pre_qc.fam tmp_post_qc.fam > bolt_remove_IIDs_file.txt
+
+# check files
+wc -l bolt_remove_IIDs_file.txt
+
+wc -l tmp_pre_qc.fam
+
+wc -l tmp_post_qc.fam
+
+tail tmp_post_qc.fam
+
+# tidy up intermediates
+
+rm tmp_post_qc.fam
+rm tmp_pre_qc.fam
+
+# remove nagtive IDs that are in single column only (not plink IID-FID format)
+
+awk '(NR>1) && ($1 > 0 ) ' bolt_remove_IIDs_file.txt > bolt_remove_IIDs_plink_file.txt
+
+tail bolt_remove_IIDs_plink_file.txt
+
+# keep just first two columns
+
+awk '{print $1, $2}' bolt_remove_IIDs_plink_file.txt > bolt_remove_IIDs_plink_file_clean.txt
+
+wc -l bolt_remove_IIDs_plink_file_clean.txt
+
+# add negative IDs that need to be dropped - just a sequence of 500 ngetaive IDs as a catch-all
+seq -500 -1 > negative_ids_to_remove.tmp
+
+# duplicate column
+
+awk '{print $1, $1}' negative_ids_to_remove.tmp > negative_ids_to_remove_plink.tmp
+
+head negative_ids_to_remove_plink.tmp
+
+# add to other IDs file, to remove
+
+cat bolt_remove_IIDs_plink_file_clean.txt negative_ids_to_remove_plink.tmp > bolt_remove_IIDs_with_negatives_plink_file.txt
+
+rm negative_ids_to_remove.tmp
+rm negative_ids_to_remove_plink.tmp
+
+head bolt_remove_IIDs_with_negatives_plink_file.txt
+tail bolt_remove_IIDs_with_negatives_plink_file.txt
+
+# remove intermediates
+rm bolt_remove_IIDs_plink_file.txt
+rm bolt_remove_IIDs_file.txt
+rm bolt_remove_IIDs_plink_file_clean.txt
+
+#######################################################
+################## SNP EXCLUSIONS #####################
+#######################################################
+
+# create file of SNPs to remove failing QC, ie. exclude file, not keep file
+sort ${ukbpath}2019_new_qc/ukb18177_glanville_post_qc_snp_list.txt > tmp_post_qc_snps.txt
+
+# check
+head tmp_pre_qc_snps.bim
+
+head tmp_post_qc_snps.txt
+
+awk '{print $2}' ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc.bim > tmp_pre_qc_snps.bim
+
+sort tmp_pre_qc_snps.bim > tmp_pre_qc_snps_list.bim
+
+comm -2 -3 tmp_pre_qc_snps_list.bim tmp_post_qc_snps.txt > bolt_remove_snps_file.txt
+
+###############################################################
+###############################################################
+
+# prepare to run flashPCA by creating pruned dataset of SNPs
+
+cd ${basepath}scripts/biomarkers_ukb
+
+sbatch ${basepath}scripts/biomarkers_ukb/prepare_genotypes.sh
+
+# now run flashPCA from within R to generate 20PCs
+
+Rscript ${basepath}scripts/biomarkers_ukb/run_flashpca.r
+
+# prepare phenotype data - TRD defined with controls for this analysis
+
+Rscript ${basepath}scripts/biomarkers_ukb/gwas_phenotyping.r
+
+#############################################################
+
+# create version of data without chrom number 24 25 26
+
+module load apps/plink/1.9.0b6.10
+
+plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc --chr 1-22,X --make-bed --out ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26
+
+#

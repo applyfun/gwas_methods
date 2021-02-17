@@ -1,0 +1,16 @@
+# Install BOLT-LMM using instructions on BOLT-LMM site
+
+# https://alkesgroup.broadinstitute.org/BOLT-LMM/BOLT-LMM_manual.html
+# https://www.nature.com/articles/ng.3190
+
+# navigate to software install directory
+cd ~/brc_scratch/software
+
+wget https://storage.googleapis.com/broad-alkesgroup-public/BOLT-LMM/downloads/BOLT-LMM_v2.3.4.tar.gz
+
+# extract it
+tar zxvf BOLT-LMM_v2.3.4.tar.gz
+
+# change directory into new created directory
+cd BOLT-LMM_v2.3.4
+

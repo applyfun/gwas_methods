@@ -1,0 +1,56 @@
+# Install SAIGE for GWAS
+
+# read in base path
+cd ~/brc_scratch/scripts/
+
+basepath=$(sed '8q;d' paths.txt)
+
+# navigate to software installation directory
+cd ~/brc_scratch/software/
+ 
+# install anaconda
+wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh
+
+bash Anaconda3-4.0.0-Linux-x86_64.sh
+
+# export to path
+export PATH=${basepath}software/anaconda3/bin:$PATH
+    
+conda list
+
+# install SAIGE
+
+wget https://raw.githubusercontent.com/weizhouUMICH/SAIGE/master/conda_env/environment-RSAIGE.yml
+
+conda env create -f environment-RSAIGE.yml
+
+source activate RSAIGE
+ 
+module load utilities/use.dev
+
+module load  apps/R/4.0.0-singularity
+
+# use "source deactivate" to end session
+
+# load R
+
+R
+
+devtools::install_github("leeshawn/MetaSKAT") 
+
+library(MetaSKAT)
+
+devtools::install_github("weizhouUMICH/SAIGE")
+
+
+# or - use second method for install
+
+src_branch=master
+  repo_src_url=https://github.com/weizhouUMICH/SAIGE
+  git clone --depth 1 -b $src_branch $repo_src_url
+
+  R CMD INSTALL --library=${basepath}software/SAIGE SAIGE
+
+
+#
+
