@@ -56,7 +56,7 @@ regenie \
   --lowmem-prefix tmp_rg \
   --out ${outputbasepath}fit_bin_test
 
-./regenie \
+regenie \
   --step 2 \
   --bgen ${ukbpath}imputed/ukb18177_glanville_imp_chr{1:22}_MAF1_INFO4_v1.bgen \
   --sample ${samplepath}ukb1817_imp_chr1_v2_s487398.sample \
