@@ -16,7 +16,11 @@ outputbasepath=${basepath}output/
 softwarebasepath=${basepath}software/
 databasepath=${basepath}data/
 
-# create new reformatted fam file
+#######################################################
+################## ID EXCLUSIONS ######################
+#######################################################
+
+# create new reformatted fam file of pre qc data
 
 module load apps/plink/1.9.0b6.10
 
@@ -24,18 +28,13 @@ plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc \
 --make-just-fam \
 --out ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted
 
-# ID and variant exclusions derived using mke_fam_inc_relatives.sh which sources Genotyped_Data_QC_JRIC_010317.sh 
+# ID and variant exclusions derived using mke_fam_inc_relatives.sh which sources Genotyped_Data_QC_JRIC_010317.sh
 # relatedness set to 1 - include related individuals for mixed model GWAS
-
-#######################################################
-################## ID EXCLUSIONS ######################
-#######################################################
-
-# copy fam file that contains related individuals but has other QC exclusions applied
+# copy post qc fam file that contains related individuals but has other QC exclusions applied
 
 cp ${jfam}ukb1817_MAF0.01_GENO0.02_MIND0.02_CAUC1_UKBQC1_UNREL1_HWE0.00000001.fam ${databasepath}biomarkers_ukb/
 
-# describe file and derive file of IIDs to remove
+# describe file and derive file of IIDs to remove by comparing post-qc with pre-qc fam
 
 head ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatted.fam
 
@@ -50,14 +49,17 @@ sort ${outputbasepath}biomarkers_ukb/ukb18177_glanville_binary_pre_qc_reformatte
 sort ${databasepath}biomarkers_ukb/ukb1817_MAF0.01_GENO0.02_MIND0.02_CAUC1_UKBQC1_UNREL1_HWE0.00000001.fam  > tmp_post_qc.fam
 
 # check pre-qc and post-qc fam files
+
 head tmp_pre_qc.fam
 
 head tmp_post_qc.fam
 
 # derive difference in IDs list
+
 comm -2 -3 tmp_pre_qc.fam tmp_post_qc.fam > bolt_remove_IIDs_file.txt
 
 # check files
+
 wc -l bolt_remove_IIDs_file.txt
 
 wc -l tmp_pre_qc.fam
@@ -69,6 +71,7 @@ tail tmp_post_qc.fam
 # tidy up intermediates
 
 rm tmp_post_qc.fam
+
 rm tmp_pre_qc.fam
 
 # remove nagtive IDs that are in single column only (not plink IID-FID format)
@@ -83,45 +86,57 @@ awk '{print $1, $2}' bolt_remove_IIDs_plink_file.txt > bolt_remove_IIDs_plink_fi
 
 wc -l bolt_remove_IIDs_plink_file_clean.txt
 
-# add negative IDs that need to be dropped - just a sequence of 500 ngetaive IDs as a catch-all
+# add negative IDs that need to be dropped - just a sequence of 500 negative IDs as a catch-all
+
 seq -500 -1 > negative_ids_to_remove.tmp
 
-# duplicate column
+# duplicate ID column to form FID IID
 
 awk '{print $1, $1}' negative_ids_to_remove.tmp > negative_ids_to_remove_plink.tmp
 
 head negative_ids_to_remove_plink.tmp
 
-# add to other IDs file, to remove
+# add negative IDs file, to remove
 
 cat bolt_remove_IIDs_plink_file_clean.txt negative_ids_to_remove_plink.tmp > bolt_remove_IIDs_with_negatives_plink_file.txt
 
-rm negative_ids_to_remove.tmp
-rm negative_ids_to_remove_plink.tmp
-
 head bolt_remove_IIDs_with_negatives_plink_file.txt
+
 tail bolt_remove_IIDs_with_negatives_plink_file.txt
 
 # remove intermediates
+
+rm negative_ids_to_remove.tmp
+
+rm negative_ids_to_remove_plink.tmp
+
 rm bolt_remove_IIDs_plink_file.txt
+
 rm bolt_remove_IIDs_file.txt
+
 rm bolt_remove_IIDs_plink_file_clean.txt
 
 #######################################################
 ################## SNP EXCLUSIONS #####################
 #######################################################
 
-# create file of SNPs to remove failing QC, ie. exclude file, not keep file
+# create file of SNPs to remove failing QC, ie. an exclude file from the current keep file
+
 sort ${ukbpath}2019_new_qc/ukb18177_glanville_post_qc_snp_list.txt > tmp_post_qc_snps.txt
 
 # check
+
 head tmp_pre_qc_snps.bim
 
 head tmp_post_qc_snps.txt
 
+# retain just variant name column
+
 awk '{print $2}' ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc.bim > tmp_pre_qc_snps.bim
 
 sort tmp_pre_qc_snps.bim > tmp_pre_qc_snps_list.bim
+
+# compare pre-qc with post-qc SNP list and take the difference
 
 comm -2 -3 tmp_pre_qc_snps_list.bim tmp_post_qc_snps.txt > bolt_remove_snps_file.txt
 
@@ -132,9 +147,13 @@ comm -2 -3 tmp_pre_qc_snps_list.bim tmp_post_qc_snps.txt > bolt_remove_snps_file
 
 cd ${basepath}scripts/biomarkers_ukb
 
+# submit job
+
 sbatch ${basepath}scripts/biomarkers_ukb/prepare_genotypes.sh
 
 # now run flashPCA from within R to generate 20PCs
+
+module load apps/R/3.6.0
 
 Rscript ${basepath}scripts/biomarkers_ukb/run_flashpca.r
 
@@ -144,7 +163,7 @@ Rscript ${basepath}scripts/biomarkers_ukb/gwas_phenotyping.r
 
 #############################################################
 
-# create version of data without chrom number 24 25 26
+# create version of data without chrom number 24 25 26 as all GWAS software don't recognise chr num >23
 
 module load apps/plink/1.9.0b6.10
 

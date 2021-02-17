@@ -17,12 +17,16 @@ echo $ukbpath
 
 module load apps/plink/1.9.0b6.10
 
+# prune
 plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc --indep-pairwise 1000 50 0.05 --exclude range ${basepath}software/flashpca/exclusion_regions_hg19.txt --out ${basepath}output/biomarkers_ukb/ukb
 
+# extract
 plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc  --extract ${basepath}output/biomarkers_ukb/ukb.prune.in --remove ${basepath}output/biomarkers_ukb/bolt_remove_IIDs_plink_file.txt --make-bed --out ${basepath}output/biomarkers_ukb/data_pruned
 
+# drop variants failing QC
 plink --bfile ${basepath}output/biomarkers_ukb/data_pruned  --extract ${ukbpath}2019_new_qc/ukb18177_glanville_post_qc_snp_list.txt --make-bed --out ${basepath}output/biomarkers_ukb/data_pruned2
 
+# remove intermediate files
 cd ${basepath}output/biomarkers_ukb
 
 rm data_pruned.bim
