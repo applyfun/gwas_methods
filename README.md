@@ -1,6 +1,6 @@
 # Methods for mixed model GWAS in UKB
 
-## BOLT-LMM - SAIGE - regenie
+## BOLT-LMM ~ SAIGE ~ regenie
 
 All three methods are adapted for the example of a binary trait (treatment resistant depression - TRD) with a highly skewed case-control ratio. 
 
@@ -37,5 +37,10 @@ Submit each GWAS job file to the cluster, eg.
 ```
 sbatch saige_gwas.sh
 ```
+
+Regenie uses a two step process, with step 1 decoupled from step 2. Regenie GWAS can be run using the regenie_gwas.sh job submission 
+file, which loops step 2 over each chromosome number. Alternatively, regenie can be run using the regenie_gwas_step1.sh job submission file, followed by the regenie_gwas_step2.sh job submission file, which creates a job array for step 2, 
+with each task processing one chromosome number. Note regenie_gwas_step1.sh atumatically submits the step 2 job array at the end of the script (no need to manually submit the job array to the cluster once step 1 finishes).
+
 
 
