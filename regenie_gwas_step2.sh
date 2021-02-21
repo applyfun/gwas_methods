@@ -47,7 +47,7 @@ regenie \
   --bsize 500 \
   --bt \
   --firth --approx \
-  --pThresh 0.01 \
+  --pThresh 0.05 \
   --pred ${outputbasepath}fit_bin_test_pred.list \
   --split \
   --out bin_${CHR}_out_firth
