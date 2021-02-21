@@ -3,7 +3,7 @@
 #SBATCH --mem-per-cpu=6G 
 #SBATCH --nodes=1 
 #SBATCH --ntasks=16 
-#SBATCH --time=72:00:00
+#SBATCH --time=96:00:00
 #SBATCH --partition brc,shared
 #SBATCH --output=saige_gwas.out.log
 
@@ -38,6 +38,18 @@ plink --bfile ${ukbpath}genotyped/ukb18177_glanville_binary_pre_qc \
 --exclude ${outputbasepath}bolt_remove_snps_file.txt \
 --out ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige
 
+# prune
+plink --bfile ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige --indep-pairwise 1000 50 0.8 --out  ${outputbasepath}saige_prune_08_exclusions_ukb_tmp
+
+# extract
+plink --bfile ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige  --extract ${outputbasepath}saige_prune_08_exclusions_ukb_tmp.prune.in --make-bed --out ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige_pruned
+
+# remove intermediate files
+
+rm ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige.bed
+rm ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige.bim
+rm ${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige.fam
+
 # Rscript to merge phenotype file with PCs since SAIGE requires covars in the same file as pheno
 
 cd ${basepath}scripts/biomarkers_ukb/
@@ -57,14 +69,14 @@ FLAGPATH=`which python | sed 's|/bin/python$||'`
 echo "Running SAIGE R script!"
 
 Rscript ${softwarebasepath}SAIGE/extdata/step1_fitNULLGLMM.R     \
-        --plinkFile=${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige \
+        --plinkFile=${outputbasepath}tmp_ukb18177_glanville_binary_pre_qc_no26_saige_pruned \
         --phenoFile=${outputbasepath}prevalent_trd_gpcontrols_plink_pheno_saige.txt \
         --phenoCol=trd_gpcontrols \
         --covarColList=PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10,PC11,PC12,PC13,PC14,PC15,PC16,PC17,PC18,PC19,PC20 \
         --sampleIDColinphenoFile=IID \
         --traitType=binary        \
         --outputPrefix=${outputbasepath}out_trd_saige \
-        --nThreads=12 \
+        --nThreads=14 \
         --LOCO=TRUE \
         --IsOverwriteVarianceRatioFile=TRUE
 
