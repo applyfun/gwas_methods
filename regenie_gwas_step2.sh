@@ -1,14 +1,11 @@
 #!/bin/sh -l
-
 #SBATCH --time=24:00:00  
 #SBATCH --job-name=regenie_step2_array 
 #SBATCH --partition brc,shared
 #SBATCh --output=array_regenie.%A_%a.out
 #SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=2G 
+#SBATCH --mem-per-cpu=8G 
 #SBATCH --array=1-22%22
-#SBATCH --mail-user=ryan.arathimos@kcl.ac.uk
-#SBATCH --mail-type=FAIL,ARRAY_TASKS
 
 echo "Beginning job!"
 
@@ -27,15 +24,16 @@ echo Samplepath$samplepath
 
 echo "Paths set!"
 
-cd ${outputbasepath}
-
 # load regenie module and assign array task ID as Chromosome number
-CHR=${SLURM_ARRAY_TASK_ID}
+
+CHR = ${SLURM_ARRAY_TASK_ID}
 
 echo ${CHR} 
 
 module load utilities/use.dev
 module load apps/regenie/2.0.1-mkl
+
+echo ${CHR}
 
 regenie \
   --step 2 \
@@ -44,10 +42,12 @@ regenie \
   --covarFile ${outputbasepath}flashpca_20pcs_ukb.tab \
   --phenoFile ${outputbasepath}prevalent_trd_gpcontrols_plink_pheno.txt \
   --remove ${outputbasepath}bolt_remove_IIDs_with_negatives_plink_file.txt \
-  --bsize 500 \
+  --bsize 400 \
   --bt \
   --firth --approx \
-  --pThresh 0.05 \
+  --pThresh 0.01 \
+  --minINFO 0.6 \
+  --minMAC 10 \
   --pred ${outputbasepath}fit_bin_test_pred.list \
   --split \
   --out bin_${CHR}_out_firth
