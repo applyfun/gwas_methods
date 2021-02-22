@@ -75,6 +75,7 @@ for CHR in {1..23}; do
 	  --bt \
 	  --firth --approx \
 	  --pThresh 0.01 \
+	  --minINFO 0.6 \  
 	  --pred ${outputbasepath}fit_bin_test_pred.list \
 	  --split \
 	  --out bin_${CHR}_out_firth
