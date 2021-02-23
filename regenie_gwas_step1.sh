@@ -3,7 +3,7 @@
 #SBATCH --mem=12G
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
-#SBATCH --time=48:0:00
+#SBATCH --time=48:00:00
 #SBATCH --partition brc,shared
 #SBATCH --constraint="ivybridge"
 
@@ -21,7 +21,10 @@ echo $basepath
 echo $ukbpath
 
 # set output path
+
 outputbasepath=${basepath}output/biomarkers_ukb/
+
+scriptsbasepath=${basepath}scripts/biomarkers_ukb/
 
 echo $outputbasepath
 
@@ -48,6 +51,7 @@ regenie \
   --extract ${ukbpath}2019_new_qc/ukb18177_glanville_post_qc_snp_list.txt \
   --phenoFile ${outputbasepath}prevalent_trd_gpcontrols_plink_pheno.txt \
   --remove ${outputbasepath}bolt_remove_IIDs_with_negatives_plink_file.txt \
+  --covarFile ${outputbasepath}flashpca_20pcs_ukb.tab \
   --bsize 1000 \
   --bt --lowmem \
   --lowmem-prefix ${outputbasepath}tmp_rg \
@@ -55,9 +59,11 @@ regenie \
 
 # submit step2 job array - comment out if step 2 to be submitted manually
 
+cd scriptsbasepath
+
 sbatch regenie_gwas_step2.sh
 
-echo FinishedStep1
+echo Done
 
 #
 
