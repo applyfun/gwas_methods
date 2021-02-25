@@ -1,11 +1,14 @@
 #!/bin/bash -l
 
-#SBATCH --mem=12G
+#SBATCH --mem=16G
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
 #SBATCH --time=48:00:00
 #SBATCH --partition brc,shared
-#SBATCH --constraint="ivybridge"
+
+
+
+# constraint="ivybridge"
 
 echo "Beginning job!"
 
@@ -59,7 +62,7 @@ regenie \
 
 # submit step2 job array - comment out if step 2 to be submitted manually
 
-cd scriptsbasepath
+cd ${scriptsbasepath}
 
 sbatch regenie_gwas_step2.sh
 
