@@ -1,4 +1,5 @@
 #!/bin/sh -l
+
 #SBATCH --time=24:00:00  
 #SBATCH --job-name=regenie_step2_array 
 #SBATCH --partition brc,shared
@@ -25,8 +26,9 @@ echo Samplepath$samplepath
 echo "Paths set!"
 
 # load regenie module and assign array task ID as Chromosome number
+echo ${SLURM_ARRAY_TASK_ID}
 
-CHR = ${SLURM_ARRAY_TASK_ID}
+CHR=${SLURM_ARRAY_TASK_ID}
 
 echo ${CHR} 
 
