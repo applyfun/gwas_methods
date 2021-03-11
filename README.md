@@ -13,11 +13,12 @@ All scripts depend on an external 'paths.txt' file to source directory paths fro
 ## For regenie
 ***
 
-### Input files 
+### Regenie input files 
 
-The input files required and their structure are described below
+The input files required and their structure are described below:
 
-*Phenotype file 
+* Phenotype file 
+
 Plain text tab-delimited format with the first two columns FID and IID, followed by the phenotype columns, as for plink. 
 If mutiple phenotypes are to be used they should be listed in separate columns.
 ```
@@ -27,8 +28,9 @@ FID  IID  pheno1  pheno2
 1003  1003  0  0
 ```
 
-*Covariate file
-Plain text tab-delimited format with the first two columns FID and IID, followed by the covariate columns (often PCs).
+* Covariate file
+
+Plain text tab-delimited format with the first two columns FID and IID, followed by the covariate columns (often PCs, sex, age etc.).
 ```
 FID  IID  PC1  PC2  
 1001  1001  0.0982  0.0343
@@ -36,7 +38,8 @@ FID  IID  PC1  PC2
 1003  1003  0.0111  0.0928
 ```
 
-*Exclusion files
+* Exclusion files
+
 Sample exclusion and variant exclusion files in regenie are specified using the --exclude/--remove options for sample IDs and variant IDs respectively (or the --keep/--extract options for lists to retain)
 Note that exclusions based on relatedness are not required since regenie accounts for relatedness.
 
@@ -55,7 +58,8 @@ rs5859595
 rs950684
 ````
 
-*Genotype files
+* Genotype files
+
 Genotype files (in bed-bim-fam plink format) are stored on the cluster. These should be processed using plink to ensure that only chromosome numbers 1-23 are included before passing to regenie.
 
 Imputed genotypes are stored on the cluster in bgen format. No processing is required for these files before passing to regenie.
