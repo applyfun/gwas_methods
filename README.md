@@ -43,14 +43,14 @@ FID  IID  PC1  PC2
 Sample exclusion and variant exclusion files in regenie are specified using the --exclude/--remove options for sample IDs and variant IDs respectively (or the --keep/--extract options for lists to retain)
 Note that exclusions based on relatedness are not required since regenie accounts for relatedness.
 
-  * Sample exclusion files should be tab-delimited plain text with no header. The first column should contain FID and the second IID of each sample to exclude.
+  - Sample exclusion files should be tab-delimited plain text with no header. The first column should contain FID and the second IID of each sample to exclude.
 
 ```
 1002	1002
 1009	1009
 ```
 
-  * Variant exclusion files should be tab-delimited plain text with no header, containing only one column of variant IDs as named in genotype files.
+  - Variant exclusion files should be tab-delimited plain text with no header, containing only one column of variant IDs as named in genotype files.
 
 ```
 rs12029
