@@ -7,6 +7,10 @@
 #SBATCH --partition brc,shared
 #SBATCH --constraint="ivybridge"
 
+
+### DEPRECATED SCRIPT - USE SPLIT STEP 1 AND STEP 2 SCRIPTS FOR REGENIE JOB SUBMISSION INSTEAD ###
+
+
 echo "Beginning job!"
 
 echo "Ivybridge!"
