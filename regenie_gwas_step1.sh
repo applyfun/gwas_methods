@@ -20,10 +20,9 @@ samplepath=$(sed '17q;d' paths.txt)
 echo $basepath
 echo $ukbpath
 
-# set output path
+# set output and scripts paths
 
 outputbasepath=${basepath}output/biomarkers_ukb/
-
 scriptsbasepath=${basepath}scripts/biomarkers_ukb/
 
 echo $outputbasepath
@@ -34,7 +33,7 @@ echo "Paths set!"
 
 cd  ${outputbasepath}regenie
 
-# regenie doesn't like bim files with chrom nums greater than 24
+# regenie doesn't like bim files with chrom nums greater than 24 - remove in intermediate step
 
 module load apps/plink/1.9.0b6.10
 
@@ -65,7 +64,7 @@ cd ${scriptsbasepath}
 
 sbatch regenie_gwas_step2.sh
 
-echo Done
+echo "Done"
 
 #
 
